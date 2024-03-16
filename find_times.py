@@ -9,30 +9,34 @@ import requests
 
 
 migri_offices = {
-    'helsinki': '25ee3bce-aec9-41a7-b920-74dc09112dd4'
+    'helsinki': '438cd01e-9d81-40d9-b31d-5681c11bd974'
 }
 
 migri_appointment_types = {
-    'permanent-residence-permit': '3e03034d-a44b-4771-b1e5-2c4a6f581b7d',
-    'family-first-and-extended-residence-permit': 'a87390ae-a870-44d4-80a7-ded974f4cb06'
+    # 'migpermanent-residence-permit': '3e03034d-a44b-4771-b1e5-2c4a6f581b7d', # Might not correct anymore
+    # 'family-first-and-extended-residence-permit': 'a87390ae-a870-44d4-80a7-ded974f4cb06' # Might not correct anymore
+    'family-citizenship': '000564ce-b800-4c2e-8040-62f50a09f55e',
 }
 
 
 class MigriSession:
     def __init__(self) -> None:
         self.__session = requests.Session()
+        # Fake user-agent header
+        self.headers = {
+            'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+        }
         self.__session_data = None
 
     def __get_session_id(self) -> str:
         if self.__session_data is None:
             print('Initializing new Migri session')
-            self.__session.get('https://migri.vihta.com/public/migri/#/reservation')
-            response = self.__session.get('https://migri.vihta.com/public/migri/api/sessions?language=en')
+            response = self.__session.get('https://migri.vihta.com/public/migri/#/reservation', headers=self.headers)
+            response = self.__session.get('https://migri.vihta.com/public/migri/api/sessions?language=en', headers=self.headers)
             if response.ok:
                 self.__session_data = response.json()
             else:
                 print('Failed to initialize session')
-
         return self.__session_data['id']
 
 
@@ -59,10 +63,8 @@ class MigriSession:
         year = week.year
         calendar_week = week.isocalendar()[1]
         url = f'https://migri.vihta.com/public/migri/api/scheduling/offices/{office}/{year}/w{calendar_week}'
-        print(f'Loading schedule for week {calendar_week}')
         mirgri_request = dict(serviceSelections=selector, extraServices=[])
         response = self.__session.post(url, params=dict(start_hours=0, end_hours=24), headers=headers, data=json.dumps(mirgri_request))
-
         if response.ok:
             try:
                 data = response.json()
@@ -87,7 +89,7 @@ def parse_time(date: str) -> datetime:
 
 def find_all_times(office: str, selector: List[Dict]) -> None:
     week = current_week_start()
-    last_week = week + timedelta(weeks=15)
+    last_week = week + timedelta(weeks=16)
 
     session = MigriSession()
 
@@ -112,7 +114,6 @@ def find_times(office: str, reservation_types: List[ReservationType]) -> Tuple[d
     ]
 
     schedule = find_all_times(migri_offices[office], selector)
-
     return [
         (week, parse_time(slot['startTimestamp']))
         for week, week_schedule in schedule.items()

@@ -21,7 +21,7 @@ Usage: main.py [OPTIONS]
 
 Options:
   --office TEXT                   Migri office  [required]
-  --reservation-type [permanent-residence-permit|family-first-and-extended-residence-permit]
+  --reservation-type [permanent-residence-permit|family-first-and-extended-residence-permit|family-citizenship]
                                   Migri reservation type  [required]
   --min-date [%Y-%m-%d|%Y-%m-%dT%H:%M:%S|%Y-%m-%d %H:%M:%S]
                                   Earliest appoinment date  [required]
@@ -39,12 +39,14 @@ Options:
 Example usage:
 
 ```bash
-python main.py --office helsinki 
-               --reservation-type permanent-residence-permit 
-               --reservation-type permanent-residence-permit 
-               --reservation-type family-first-and-extended-residence-permit 
-               --min-date 2020-11-15 
-               --max-date 2021-03-29
+python main.py --office helsinki
+               --reservation-type family-citizenship
+               --min-date 2024-15-03
+               --max-date 2021-15-07
 ```
 
 In the example above we specify a reservation type for each person.
+
+# Emailer setup
+Instead of using macOS notification, you can setup SMTP emiler so the program will notify available slots to email. 
+Create a file envs.py and enter the Google credentials for STMP setup. Note that you must create an app password to use Google SMTP server.
